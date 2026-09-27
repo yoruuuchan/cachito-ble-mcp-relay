@@ -1,5 +1,9 @@
 # Cachito BLE MCP Relay
 
+<a href="https://github.com/DasterProkio/awesome-ai-companion/blob/main/README.zh-CN.md">
+  <img src="https://raw.githubusercontent.com/DasterProkio/awesome-ai-companion/main/assets/featured-in-awesome-ai-companion-zh-CN.png" alt="已收录于人机恋开源项目大全" height="24">
+</a>
+
 把 Cachito 失控 2.0 接入 MCP 的 Android BLE 中继项目。
 
 这个项目的作用是：让 MCP 客户端把命令发到服务端，服务端转发给 Android 手机，再由手机发送 BLE legacy advertisement，控制本地设备。
