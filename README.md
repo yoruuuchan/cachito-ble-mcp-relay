@@ -4,9 +4,9 @@
   <img src="https://raw.githubusercontent.com/DasterProkio/awesome-ai-companion/main/assets/featured-in-awesome-ai-companion-zh-CN.png" alt="已收录于人机恋开源项目大全" height="24">
 </a>
 
-把 Cachito 失控 2.0 接入 MCP 的 Android BLE 中继项目。
+把 Cachito 失控 2.0 接进 MCP 的 Android BLE 中继。
 
-这个项目的作用是：让 MCP 客户端把命令发到服务端，服务端转发给 Android 手机，再由手机发送 BLE legacy advertisement，控制本地设备。
+MCP 客户端把命令发到服务端，服务端转给 Android 手机，手机再发出 BLE legacy advertisement，控制本地设备。
 
 ```text
 MCP Client
@@ -19,17 +19,17 @@ MCP Client
 
 VPS 不需要蓝牙。真正靠近设备、负责发 BLE 广播的是 Android 手机。
 
-目前只验证了 Android relay。iPhone / iOS 暂时不能直接使用。
+目前只验证了 Android 中继。iPhone / iOS 暂时不能直接用。
 
-## 已验证设备
+## 验证过的设备
 
 | 设备 | 控制方式 | 状态 |
 |---|---|---|
 | Cachito 失控 2.0 | BLE legacy advertisement | 已验证 |
 
-不同批次、固件、型号可能不兼容。换设备需要重新抓包和验证。
+不同批次、固件、型号可能不兼容。换设备就要重新抓包、重新验证。
 
-## 项目结构
+## 仓库里有什么
 
 ```text
 server/
@@ -47,24 +47,24 @@ docs/
   本地调试和部署文档
 ```
 
-## 平台支持
+## 支持哪些平台
 
 | 平台 / 组件 | 状态 |
 |---|---|
-| Android relay App | 已验证 |
+| Android 中继 App | 已验证 |
 | Windows 本地调试 | 已验证 |
 | VPS + Cloudflare Tunnel | 已验证 |
-| iPhone / iOS relay | 未验证，暂不支持 |
+| iPhone / iOS 中继 | 未验证，暂不支持 |
 
-iPhone 用户目前不能直接照着本文使用。仓库里没有 iOS relay App，也没有验证 iOS 能否稳定发送目标设备需要的 BLE advertisement。
+iPhone 用户目前没法直接照着这份文档用。仓库里没有 iOS 中继 App，也没验证过 iOS 能不能稳定发出目标设备需要的 BLE advertisement。
 
-## 基本设计
+## 它是怎么工作的
 
-Cachito 失控 2.0 不是通过普通 GATT write 控制的。官方 App 会发送 BLE legacy advertisement，设备监听其中的 128-bit Service UUID 并执行动作。
+Cachito 失控 2.0 不走普通的 GATT write。官方 App 发的是 BLE legacy advertisement，设备监听里面的 128-bit Service UUID，再执行对应的动作。
 
-本项目只把已经验证过的动作封装成 MCP tools，不提供通用蓝牙发包器。
+这里只把已经验证过的动作封装成 MCP tools，不提供通用的蓝牙发包器。
 
-当前 tools：
+现在有这些 tools：
 
 ```text
 get_status
@@ -77,9 +77,9 @@ set_channel_a
 set_channel_b
 ```
 
-`set_channel_a` 和 `set_channel_b` 是中性别名，适合在 MCP 客户端里使用。它们内部仍然映射到实际通道。
+`set_channel_a` 和 `set_channel_b` 是中性的别名，适合在 MCP 客户端里用。它们内部还是映射到实际通道。
 
-第一次测试建议：
+第一次测试，建议按这个顺序：
 
 ```text
 get_status
@@ -92,7 +92,7 @@ stop_all
 
 ## 鉴权
 
-服务端使用两个 token：
+服务端用两个 token：
 
 ```text
 MCP_TOKEN    给 MCP endpoint 和状态接口用
@@ -101,7 +101,7 @@ PHONE_TOKEN  给 Android App 的 WebSocket 连接用
 
 不要把生产 token 提交到仓库，也不要发到 issue、截图、日志里。
 
-生产环境推荐：
+生产环境建议这样配：
 
 ```env
 HOST=127.0.0.1
@@ -111,9 +111,9 @@ ALLOW_HIGH_LEVELS=false
 
 `3000` 端口不要直接暴露到公网。用 Cloudflare Tunnel、Caddy 或 Nginx 反代。
 
-## 本地运行
+## 在本地跑起来
 
-安装依赖：
+装依赖、跑测试、构建：
 
 ```bash
 cd server
@@ -122,7 +122,7 @@ npm test
 npm run build
 ```
 
-启动本地 relay：
+启动本地中继：
 
 ```bash
 MCP_TOKEN=dev-mcp-token \
@@ -133,19 +133,19 @@ PORT=3000 \
 npm start
 ```
 
-如果用 USB 调试：
+用 USB 调试的话：
 
 ```bash
 adb reverse tcp:3000 tcp:3000
 ```
 
-Android App 填：
+Android App 里填：
 
 ```text
 ws://127.0.0.1:3000/phone/ws
 ```
 
-如果走局域网，手机和电脑在同一网络下，App 填电脑局域网 IP：
+走局域网的话，手机和电脑要连在同一个网络，App 里填电脑的局域网 IP：
 
 ```text
 ws://192.168.x.x:3000/phone/ws
@@ -166,7 +166,7 @@ cd android
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-App 内填写：
+在 App 里填：
 
 ```text
 Server URL: ws://127.0.0.1:3000/phone/ws
@@ -174,7 +174,7 @@ Phone token: PHONE_TOKEN
 Pairing ID: 设备 pairing ID
 ```
 
-公网部署后：
+部署到公网以后，Server URL 填：
 
 ```text
 Server URL: wss://example.com/phone/ws
@@ -182,9 +182,9 @@ Server URL: wss://example.com/phone/ws
 
 Android 12 及以上需要授予蓝牙 / Nearby Devices 权限。
 
-## 公网部署
+## 部署到公网
 
-推荐结构：
+推荐这样搭：
 
 ```text
 MCP Client
@@ -195,7 +195,7 @@ MCP Client
 → BLE advertisement
 ```
 
-生成生产 token：
+生成两个生产 token：
 
 ```bash
 openssl rand -hex 32
@@ -213,9 +213,9 @@ MCP_TOKEN=replace-with-production-token
 PHONE_TOKEN=replace-with-production-token
 ```
 
-如果 VPS 已经有 nginx、sing-box、Caddy 占用 80 / 443，优先用 Cloudflare Tunnel，不要抢端口。
+如果 VPS 上已经有 nginx、sing-box、Caddy 占着 80 / 443，优先用 Cloudflare Tunnel，不要抢端口。
 
-Cloudflare Tunnel 目标：
+Cloudflare Tunnel 指向：
 
 ```text
 example.com
@@ -228,13 +228,13 @@ example.com
 curl https://example.com/healthz
 ```
 
-预期：
+应该返回：
 
 ```json
 {"ok":true}
 ```
 
-匿名状态接口应该返回 401：
+不带 token 访问状态接口，应该返回 401：
 
 ```bash
 curl https://example.com/phone/status
@@ -247,21 +247,21 @@ curl -H "Authorization: Bearer $MCP_TOKEN" \
   https://example.com/phone/status
 ```
 
-手机连接后，应看到：
+手机连上以后，应该能看到：
 
 ```json
 "phone_online": true
 ```
 
-## MCP 客户端接入
+## 接入 MCP 客户端
 
-Endpoint：
+地址：
 
 ```text
 https://example.com/mcp
 ```
 
-Header：
+请求头：
 
 ```text
 Authorization: Bearer <MCP_TOKEN>
@@ -276,11 +276,11 @@ set_channel_b(level=10, duration_ms=2000)
 stop_all
 ```
 
-如果客户端只支持 OAuth，不支持 Bearer header，需要给 server 额外加 OAuth 层。不要把 `/mcp` 改成无鉴权。
+如果客户端只支持 OAuth、不支持 Bearer header，就要给服务端另外加一层 OAuth。不要把 `/mcp` 改成无鉴权。
 
-## 逆向流程记录
+## 协议是怎么逆向出来的
 
-本项目最初通过 Android Bluetooth HCI snoop log 分析官方 App 的 BLE 广播行为。
+最开始是用 Android 的 Bluetooth HCI snoop log，分析官方 App 发 BLE 广播的方式。
 
 大致流程：
 
@@ -295,23 +295,23 @@ stop_all
 8. 用 stop_all 做验收。
 ```
 
-这个流程只适用于拥有者自测。不要测试或控制不属于自己的设备。
+这个流程只适用于设备拥有者自测。不要测试或控制不属于自己的设备。
 
-## 故障排查
+## 排错
 
-手机离线时，先查 App URL、PHONE_TOKEN、App 是否仍在前台，以及 `/phone/status`。
+手机离线：先查 App 里的 URL、PHONE_TOKEN、App 是不是还在前台，还有 `/phone/status`。
 
-USB 断了就重新跑：
+USB 断了，就重新跑：
 
 ```bash
 adb reverse tcp:3000 tcp:3000
 ```
 
-局域网连不上时，确认手机和电脑在同一网络，确认防火墙放行，确认 App URL 不是 `127.0.0.1`。
+局域网连不上：确认手机和电脑在同一个网络，防火墙已放行，App 里的 URL 不是 `127.0.0.1`。
 
-大陆 VPS 出现 HTTPS/TLS 异常时，优先考虑备案、SNI 拦截或入口策略问题。换非大陆 VPS 或 Cloudflare Tunnel 往往更省事。
+大陆 VPS 上 HTTPS/TLS 出异常：先考虑备案、SNI 拦截或入口策略的问题。换非大陆 VPS，或者用 Cloudflare Tunnel，往往更省事。
 
-iPhone 不能用时，不是 bug。当前没有 iOS relay。
+iPhone 用不了不是 bug。现在没有 iOS 中继。
 
 ## License
 
