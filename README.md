@@ -8,18 +8,20 @@
 
 MCP 客户端把命令发到服务端，服务端转给 Android 手机，手机再发出 BLE legacy advertisement，控制本地设备。
 
-```text
-MCP Client
-→ HTTPS MCP endpoint
-→ VPS Relay
-→ Android WebSocket
-→ Android BLE advertisement
-→ Cachito 失控 2.0
+```mermaid
+flowchart LR
+    A[MCP Client] -->|HTTPS + Bearer| B[VPS Relay]
+    B -->|WebSocket| C[Android App]
+    C -->|BLE legacy advertisement| D[Cachito 失控 2.0]
 ```
 
 VPS 不需要蓝牙。真正靠近设备、负责发 BLE 广播的是 Android 手机。
 
 目前只验证了 Android 中继。iPhone / iOS 暂时不能直接用。
+
+**仅用于拥有者自测。不要测试或控制不属于自己的设备。**
+
+**目录：** [验证过的设备](#验证过的设备) · [仓库结构](#仓库里有什么) · [支持的平台](#支持哪些平台) · [工作原理](#它是怎么工作的) · [鉴权](#鉴权) · [本地运行](#在本地跑起来) · [Android App](#android-app) · [部署到公网](#部署到公网) · [接入 MCP](#接入-mcp-客户端) · [协议逆向](#协议是怎么逆向出来的) · [排错](#排错)
 
 ## 验证过的设备
 
@@ -61,6 +63,19 @@ iPhone 用户目前没法直接照着这份文档用。仓库里没有 iOS 中�
 ## 它是怎么工作的
 
 Cachito 失控 2.0 不走普通的 GATT write。官方 App 发的是 BLE legacy advertisement，设备监听里面的 128-bit Service UUID，再执行对应的动作。
+
+```mermaid
+sequenceDiagram
+    participant M as MCP Client
+    participant V as VPS Relay
+    participant A as Android App
+    participant D as 设备
+    M->>V: tool call
+    V->>A: command over WebSocket
+    A->>D: BLE advertisement
+    A-->>V: result
+    V-->>M: tool result
+```
 
 这里只把已经验证过的动作封装成 MCP tools，不提供通用的蓝牙发包器。
 
